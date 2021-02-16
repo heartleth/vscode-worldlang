@@ -1,0 +1,60 @@
+{
+    "name": "wlsupport",
+    "displayName": "worldlang language support",
+    "description": "worldlang language support for vscode",
+    "publisher": "myjmyjmyj",
+    "icon": "./Untitled.ico",
+    "version": "0.0.1",
+    "license": "MIT",
+    "engines": {
+        "vscode": "^1.53.0"
+    },
+    "keywords": [
+        "English++",
+        "engplus",
+        "epp",
+        "worldlang",
+        "snippet"
+    ],
+    "categories": [
+        "Programming Languages",
+        "Snippets"
+    ],
+    "scripts": {
+        "compile": "npx tsc extension.ts",
+        "test-compile": "npx tsc extension.ts"
+    },
+    "contributes": {
+        "languages": [
+            {
+                "id": "engplus",
+                "aliases": [
+                    "English++ worldlang",
+                    "engplus"
+                ],
+                "extensions": [
+                    ".epp"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "engplus",
+                "scopeName": "source.epp",
+                "path": "./syntaxes/engplus.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "engplus",
+                "path": "./engplussnippet.json.code-snippets"
+            }
+        ]
+    },
+    "activationEvents": [
+        "onLanguage:engplus"
+    ],
+    "main": "./extension.js",
+    "dependencies": {}
+}

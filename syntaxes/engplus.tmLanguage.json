@@ -1,0 +1,156 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "wlsupport",
+	"patterns": [
+		{"include": "#comments"},
+		{"include": "#itpattern"},
+		{"include": "#keywords"},
+		{"include": "#nums"},
+		{"include": "#mhl"},
+		{"include": "#consts"},
+		{"include": "#opers"},
+		{"include": "#libs"},
+		{"include": "#strings"},
+		{"include": "#members"},
+		{"include": "#namespaces"},
+		{"include": "#macros"},
+		{"include": "#classes"},
+		{"include": "#functions"}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [{
+				"name": "comment.line.semi-colon",
+				"match": ";.*$"
+			}]
+		},
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.wlsupport",
+				"match": "\\b([Ii]t|[Ss]et|[Ee]lse|[Tt]hen|[Nn]ow|(result|addr(ess)?|ptr|value)|of|about|with|const|[Ii]f|[Ww]hile|[Ff]or|[Rr]eturn|[Rr]epeat|[Uu]nless|[Uu]se|break|public|protected|private|[Ww]hen|async|await|to)\\b"
+			}]
+		},
+		"opers": {
+			"name": "keyword.operator.wlsupport",
+			"match": "\\b(or|plus|minus|and|as|is)\\b"
+		},
+		"mhl": {
+			"name": "keyword.control.wlsupport",
+			"begin": "([Mm]ake|[Hh]as|[Hh]ave|[Ll]et)\\s+",
+			"end": "(as|(about|with|for|:|->)|is)\\s+|$",
+			"patterns": [{
+				"name": "variable.other.wlsupport",
+				"match": "([a-zA-Z_][a-zA-Z0-9_]*)"
+			}]
+		},
+		"itpattern": {
+			"name": "keyword.control.wlsupport",
+			"begin": "[Ii]t|@",
+			"end": "\\s+(about|with|for|:|->)|$",
+			"patterns": [{
+				"name": "entity.name.function.wlsupport",
+				"match": "([a-zA-Z_][\\-a-zA-Z0-9_]*)"
+			}]
+		},
+		"consts": {
+			"name": "constant.language.wlsupport",
+			"match": "(true|false)\\b"
+		},
+		"nums": {
+			"name": "constant.numeric.wlsupport",
+			"match": "(?<=([^a-z_A-Z]))([+-]?[0-9]+(\\.[0-9]+)?)|0x[0-9a-fA-F]+"
+		},
+		"functions": {
+			"patterns": [{
+				"name": "keyword.control.wlsupport",
+				"begin": "[Ww]hen\\s+",
+				"end": "$",
+				"patterns": [{
+					"name": "entity.name.function.wlsupport",
+					"begin": "\\s+([a-zA-Z_]|[^i][^t]|[a-zA-Z_][\\-a-zA-Z0-9_]{2,})\\s+",
+					"end": "$",
+					"patterns": [{
+						"name":"keyword.control.wlsupport",
+						"match": "\\s+(and|it)\\s+"
+					}, {
+						"name":"entity.name.type.wlsupport",
+						"match": "\\b([a-zA-Z_]|[^i][^t]|[^u][^s][^e]|[a-zA-Z_][\\-a-zA-Z0-9_]{3,})\\b"
+					}]
+				}]
+			}, {
+				"name": "keyword.control.wlsupport",
+				"begin": "[Uu]se",
+				"end": "$",
+				"patterns": [{
+					"name": "entity.name.function.wlsupport",
+					"match": "[^:]|[^\\-][^>]|[^f][^o][^r]|[^w][^i][^t][^h]|[^a][^b][^o][^u][^t]|[a-zA-Z_][a-zA-Z0-9_]{4,}"
+				}, {
+					"name": "keyword.control.wlsupport",
+					"match": "with|about|for|:|->"
+				}]
+			}]
+		},
+		"classes": {
+			"name": "keyword.control.wlsupport",
+			"begin": "[Cc]lass",
+			"end": "$",
+			"patterns": [{
+				"name": "entity.name.type.class.wlsupport",
+				"match": "\\b([a-zA-Z_][a-zA-Z0-9_]{0, 2}|[^t][^y][^p][^e]|[a-zA-Z_][a-zA-Z0-9_]{4,})\\b",
+				"patterns": [{
+					"name": "keyword.control.wlsupport",
+					"match": "\\btype\\b"
+				}]
+			}]
+		},
+		"macros": {
+			"patterns": [{
+				"name": "entity.name.other.preprocessor.macro",
+				"match": "([a-zA-Z_][\\-a-zA-Z0-9_]*)[:=!@]"
+			}]
+		},
+		"types": {
+			"name": "support.type.wlsupport",
+			"match": "\\s+int(eger)?|char|string|long|double|float\\s+"
+		},
+		"namespaces": {
+			"name": "keyword.control.wlsupport",
+			"begin": "\\s+in\\s+",
+			"end": "\\s",
+			"patterns": [{
+				"name": "entity.name.namespace.wlsupport",
+				"match": "([a-zA-Z_][a-zA-Z0-9_]*)"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.wlsupport",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.wlsupport",
+					"match": "\\\\."
+				}
+			]
+		},
+		"libs": {
+			"begin": "(import|include|lib(rary)?)\\s",
+			"end": "$",
+			"name": "keyword.control.wlsupport",
+			"patterns": [{
+				"name": "string.quoted.double.wlsupport",
+				"match": ".+"
+			}]
+		},
+		"members": {
+			"name": "null",
+			"begin": "'s\\s+",
+			"end": "\\s",
+			"patterns": [{
+				"name": "entity.name.function.member.wlsupport",
+				"match": "([a-zA-Z_][a-zA-Z0-9_]*)"
+			}]
+		}
+	},
+	"scopeName": "source.epp"
+}
