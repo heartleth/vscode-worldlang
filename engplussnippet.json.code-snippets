@@ -1,0 +1,127 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	"Print to console": {
+		"scope": "engplus",
+		"prefix": "repeat",
+		"body": [
+			"Repeat "
+		],
+		"description": "repeat"
+	},
+	"main scope": {
+		"scope": "engplus",
+		"prefix": "start",
+		"body": [
+			"When it starts",
+			"\t"
+		],
+		"description": "main scope"
+	},
+	"new class": {
+		"scope": "engplus",
+		"prefix": "class",
+		"body": [
+			"Class object type $1",
+			"\tprivate",
+			"\t\t",
+			"\tpublic",
+			"\t\tWhen $1 created",
+			"\t\t\t$2",
+			""
+		],
+		"description": "new class"
+	},
+	"stdandard pack": {
+		"scope": "engplus",
+		"prefix": "lst",
+		"body": [
+			"library standard",
+			""
+		],
+		"description": "stdpack"
+	},
+	"for": {
+		"scope": "engplus",
+		"prefix": "for",
+		"body": [
+			"For ${2:element} of ${1:array}",
+			"\t"
+		],
+		"description": "for loop"
+	},
+	"while": {
+		"scope": "engplus",
+		"prefix": "while",
+		"body": [
+			"While $1",
+			"\t"
+		],
+		"description": "whille"
+	},
+	"let": {
+		"scope": "engplus",
+		"prefix": "let",
+		"body": [
+			"Let "
+		],
+		"description": "new variable"
+	},
+	"letas": {
+		"scope": "engplus",
+		"prefix": "letas",
+		"body": [
+			"Let ${1:variable} as ${2:val}"
+		],
+		"description": "let ~ as"
+	},
+	"have": {
+		"scope": "engplus",
+		"prefix": "have",
+		"body": [
+			"Have ${1:variable} as ${2:value}"
+		],
+		"description": "have"
+	},
+	"new var": {
+		"scope": "engplus",
+		"prefix": "new",
+		"body": [
+			"${1|Let ,Have ,Make |}"
+		],
+		"description": "new variable"
+	},
+	"log": {
+		
+		"scope": "engplus",
+		"prefix": "log",
+		"body": [
+			"It printf about \"$1\\n\"",
+			""
+		],
+		"description": "printf"
+	},
+	"when": {
+		"scope": "engplus",
+		"prefix": ["when", "func"],
+		"body": [
+			"When it ${1:name}",
+			"\t$2"
+		],
+		"description": "function definition"
+	},
+	"elif": {
+		"scope": "engplus",
+		"prefix": "elif",
+		"body": [
+			"else if ${1:name}",
+			"\t$2"
+		],
+		"description": "else if"
+	},
+}
