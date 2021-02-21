@@ -1,0 +1,18 @@
+library standard
+
+class object type dog
+    private
+        
+    public
+        When dog created
+            
+
+namespace myns
+    Let a as 10
+
+When it starts
+    Let a as 20
+
+    a + 10
+    
+    ( a in myns ) * 2

@@ -12,6 +12,7 @@
 		{"include": "#libs"},
 		{"include": "#strings"},
 		{"include": "#members"},
+		{"include": "#namespace"},
 		{"include": "#namespaces"},
 		{"include": "#macros"},
 		{"include": "#classes"},
@@ -116,6 +117,15 @@
 		"namespaces": {
 			"name": "keyword.control.wlsupport",
 			"begin": "\\s+in\\s+",
+			"end": "\\s",
+			"patterns": [{
+				"name": "entity.name.namespace.wlsupport",
+				"match": "([a-zA-Z_][a-zA-Z0-9_]*)"
+			}]
+		},
+		"namespace": {
+			"name": "keyword.control.wlsupport",
+			"begin": "\\s*name\\s?space\\s+",
 			"end": "\\s",
 			"patterns": [{
 				"name": "entity.name.namespace.wlsupport",
