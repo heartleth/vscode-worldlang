@@ -2,7 +2,7 @@
 
 <p align=center><img src="https://github.com/heartleth/worldlang/raw/main/img/WL.png"/></p>
 
-![](2021-02-16-14-03-56.png)
+![](imgs/engppsupp.gif)
 
 [Worldlang](https://github.com/heartleth/worldlang) is more extensible English++.
 
