@@ -3,8 +3,8 @@
     "displayName": "worldlang language support",
     "description": "worldlang language support for vscode",
     "publisher": "myjmyjmyj",
-    "icon": "./Untitled.ico",
-    "version": "0.0.1",
+    "repository": "https://github.com/heartleth/vscode-worldlang",
+    "version": "0.1.0",
     "license": "MIT",
     "engines": {
         "vscode": "^1.53.0"
