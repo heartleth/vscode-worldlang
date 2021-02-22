@@ -4,7 +4,7 @@
 	"description": "worldlang language support for vscode",
 	"publisher": "myjmyjmyj",
 	"repository": "https://github.com/heartleth/vscode-worldlang",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"license": "MIT",
 	"icon": "imgs/WL.png",
 	"engines": {
@@ -57,7 +57,6 @@
 		"onLanguage:engplus"
 	],
 	"main": "./extension.js",
-	"dependencies": {},
 	"__metadata": {
 		"id": "a06feb76-d444-40d6-8a12-72252599f6a1",
 		"publisherDisplayName": "myjmyjmyj",
