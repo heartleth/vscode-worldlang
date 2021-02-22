@@ -1,18 +1,17 @@
 library standard
 
-class object type dog
-    private
-        
-    public
-        When dog created
-            
+class object type class1
+    Has integer num as 20
 
-namespace myns
-    Let a as 10
+class object type class2
+    Has class1 r
+    
+class object type class3
+    Has class2 r
 
 When it starts
-    Let a as 20
+    Let class3 hello
 
-    a + 10
-    
-    ( a in myns ) * 2
+    hello having r having r having num
+
+    num

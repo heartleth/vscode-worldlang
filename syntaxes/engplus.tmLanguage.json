@@ -28,7 +28,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.wlsupport",
-				"match": "\\b([Ii]t|[Ss]et|[Ee]lse|[Tt]hen|[Nn]ow|(result|addr(ess)?|ptr|value)|of|about|with|const|[Ii]f|[Ww]hile|[Ff]or|[Rr]eturn|[Rr]epeat|[Uu]nless|[Uu]se|break|public|protected|private|[Ww]hen|async|await|to)\\b"
+				"match": "\\b(having|[Ii]t|[Ss]et|[Ee]lse|[Tt]hen|[Nn]ow|(result|addr(ess)?|ptr|value)|of|about|with|const|[Ii]f|[Ww]hile|[Ff]or|[Rr]eturn|[Rr]epeat|[Uu]nless|[Uu]se|break|public|protected|private|[Ww]hen|async|await|to)\\b"
 			}]
 		},
 		"opers": {
