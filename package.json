@@ -1,64 +1,4 @@
 {
-<<<<<<< Updated upstream
-    "name": "wlsupport",
-    "displayName": "worldlang language support",
-    "description": "worldlang language support for vscode",
-    "publisher": "myjmyjmyj",
-    "repository": "https://github.com/heartleth/vscode-worldlang",
-    "version": "0.1.0",
-    "license": "MIT",
-    "engines": {
-        "vscode": "^1.53.0"
-    },
-    "keywords": [
-        "English++",
-        "engplus",
-        "epp",
-        "worldlang",
-        "snippet"
-    ],
-    "categories": [
-        "Programming Languages",
-        "Snippets"
-    ],
-    "scripts": {
-        "compile": "npx tsc extension.ts",
-        "test-compile": "npx tsc extension.ts"
-    },
-    "contributes": {
-        "languages": [
-            {
-                "id": "engplus",
-                "aliases": [
-                    "English++ worldlang",
-                    "engplus"
-                ],
-                "extensions": [
-                    ".epp"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "engplus",
-                "scopeName": "source.epp",
-                "path": "./syntaxes/engplus.tmLanguage.json"
-            }
-        ],
-        "snippets": [
-            {
-                "language": "engplus",
-                "path": "./engplussnippet.json.code-snippets"
-            }
-        ]
-    },
-    "activationEvents": [
-        "onLanguage:engplus"
-    ],
-    "main": "./extension.js",
-    "dependencies": {}
-=======
 	"name": "wlsupport",
 	"displayName": "worldlang language support",
 	"description": "worldlang language support for vscode",
@@ -66,6 +6,7 @@
 	"repository": "https://github.com/heartleth/vscode-worldlang",
 	"version": "0.1.0",
 	"license": "MIT",
+	"icon": "imgs/WL.png",
 	"engines": {
 		"vscode": "^1.53.0"
 	},
@@ -81,8 +22,8 @@
 		"Snippets"
 	],
 	"scripts": {
-		"compile": "npx tsc extension.ts",
-		"test-compile": "npx tsc extension.ts"
+		"compile": "tsc extension.ts",
+		"test-compile": "tsc extension.ts"
 	},
 	"contributes": {
 		"languages": [
@@ -116,14 +57,10 @@
 		"onLanguage:engplus"
 	],
 	"main": "./extension.js",
-	"dependencies": {
-		"tsc": "^1.20150623.0",
-		"vscode": "^1.1.37"
-	},
+	"dependencies": {},
 	"__metadata": {
 		"id": "a06feb76-d444-40d6-8a12-72252599f6a1",
 		"publisherDisplayName": "myjmyjmyj",
 		"publisherId": "40542725-88df-49c6-bb13-1fe9e716d692"
 	}
->>>>>>> Stashed changes
 }
