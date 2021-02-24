@@ -3,8 +3,7 @@ Class object type dog
     When dog barks
         println: "bark bark"
 
-
 When it starts
-    let dog puppy as 10
+    Let dog puppy as 10
 
-    while puppy 
+    puppy barks

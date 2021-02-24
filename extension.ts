@@ -210,7 +210,6 @@ class GoCompletionItemProvider implements vscode.CompletionItemProvider {
         let indent = indent_size(defs);
         
         if (sp[s-1]=='that' || (s==0&&!/^(that|to|was|were|having|make|let|have|while|if|repeat)$/i.test(sp[s]))) {
-            ret.push(new vscode.CompletionItem('asdasdsa2d'));
             if (sp[s]=='it') {
                 defs.filter(e=>RegExp(`when [a-zA-Z0-9_]+ [a-zA-Z0-9_]+`, 'i').test(e[0]+''))
                 .filter(e=>{
