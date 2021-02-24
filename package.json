@@ -61,5 +61,8 @@
 		"id": "a06feb76-d444-40d6-8a12-72252599f6a1",
 		"publisherDisplayName": "myjmyjmyj",
 		"publisherId": "40542725-88df-49c6-bb13-1fe9e716d692"
+	},
+	"dependencies": {
+		"vscode": "^1.1.37"
 	}
 }

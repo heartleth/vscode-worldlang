@@ -1,17 +1,10 @@
-library standard
+Class object type dog
+    When dog created
+    When dog barks
+        println: "bark bark"
 
-class object type class1
-    Has integer num as 20
-
-class object type class2
-    Has class1 r
-    
-class object type class3
-    Has class2 r
 
 When it starts
-    Let class3 hello
+    let dog puppy as 10
 
-    hello having r having r having num
-
-    num
+    while puppy 

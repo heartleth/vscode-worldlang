@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 const WL_MODE: vscode.DocumentSelector = { language: 'engplus', pattern: '**/*.epp' };
 const TOKEN_REGEX = /[^;\t\s()]+/;
@@ -130,9 +130,6 @@ function get_var_context(name: string, s: number, context: string[], doc: vscode
         }
     }
 }
-function get_type(name: string, context: string[], defs: (string|number)[][]) {
-    
-}
 
 function definition(context: string, doc: vscode.TextDocument, pos: vscode.Position): string {
     if (/^[\s\t\r\n]$/.test(doc.getText(new vscode.Range(pos, new vscode.Position(pos.line, pos.character+1))))) return '';
@@ -203,6 +200,168 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
     }
 }
 
+class GoCompletionItemProvider implements vscode.CompletionItemProvider {
+    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.CompletionItem[]> {
+        const context = document.getText().split(/\r\n/)[position.line];
+        const sp = context.trim().split(/[\s\t]+/);
+        const defs = document.getText().split(/\r\n/).map((a,b)=>[a,b]);
+        let ret: vscode.CompletionItem[] = [];
+        let s = context.substring(0, position.character).trim().split(/\s+/).length - 1;
+        let indent = indent_size(defs);
+        
+        if (sp[s-1]=='that' || (s==0&&!/^(that|to|was|were|having|make|let|have|while|if|repeat)$/i.test(sp[s]))) {
+            ret.push(new vscode.CompletionItem('asdasdsa2d'));
+            if (sp[s]=='it') {
+                defs.filter(e=>RegExp(`when [a-zA-Z0-9_]+ [a-zA-Z0-9_]+`, 'i').test(e[0]+''))
+                .filter(e=>{
+                    const idts=String(e[0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
+                    for (let i=Number(e[1])-1;i>=0;i--) {
+                        if (String(defs[i][0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch < idts) {
+                            if (/class/i.test(String(defs[i][0]))) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                })
+                .map(e=>String(e[0]).match(/(?<=(when [a-zA-Z0-9_]+ ))[a-zA-Z0-9_]+/i)[0])
+                .filter(e=>e!='created')
+                .map(e=>ret.push(new vscode.CompletionItem(e, vscode.CompletionItemKind.Method)));
+            }
+            else {
+                const typename = String(defs.filter(e=>RegExp(`^[^;]*(let|have|make) ([a-zA-Z0-9_]+ )*${sp[s]}( (is|as|:|->|with|for|of|about|to).*|(\s*;.*)?)?$`, 'i').test(e[0]+''))[0][0]).match(RegExp(`[a-z0-9A-Z_]+(?=( ${sp[s]}))`))[0];
+                const line = defs.filter(e=>RegExp(`^class [a-zA-Z0-9_]+ type ${typename}`, 'i').test(e[0]+''))[0][1];
+                let line_indents = String(line[0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
+                let trimmed = defs.filter(e=>e[1]>line);
+                let findcontext: (string|number)[][] = [];
+                for (const s of trimmed) {
+                    findcontext.push(s);
+                    if (!RegExp(`^${indent.char.repeat(indent.howmuch*(line_indents+1))}`).test(s[0]+'')) break;
+                }
+                findcontext.filter(e=>RegExp(`^[^;]*when [a-zA-Z0-9_]+ [a-zA-Z0-9_]+`, 'i').test(e[0]+''))
+                .map(e=>String(e[0]).match(/(?<=(when [a-zA-Z0-9_]+ ))[a-zA-Z0-9_]+/i)[0])
+                .filter(e=>e!='created')
+                .map(e=>ret.push(new vscode.CompletionItem(e, vscode.CompletionItemKind.Method)));
+            }
+        }
+        else if (/^(to|was|were)$/i.test(sp[s])) {
+            defs.filter(e=>RegExp(`when [a-zA-Z0-9_]+ [a-zA-Z0-9_]+`, 'i').test(e[0]+''))
+            .filter(e=>{
+                const idts=String(e[0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
+                for (let i=Number(e[1])-1;i>=0;i--) {
+                    if (String(defs[i][0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch < idts) {
+                        if (/class/i.test(String(defs[i][0]))) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            })
+            .map(e=>String(e[0]).match(/(?<=(when [a-zA-Z0-9_]+ ))[a-zA-Z0-9_]+/i)[0])
+            .filter(e=>e!='created')
+            .map(e=>ret.push(new vscode.CompletionItem(e, vscode.CompletionItemKind.Method)));
+        }
+        else if (/^(make|let|have)$/i.test(sp[s])) {
+            defs.filter(e=>RegExp(`^class [a-zA-Z0-9_]+ type [a-zA-Z0-9_]+`, 'i').test(e[0]+''))
+            .map(e=>String(e[0]).match(/(?<=type\s)[a-zA-Z0-9_]+/i)[0])
+            .filter(e=>e!='created')
+            .map(e=>ret.push(new vscode.CompletionItem(e, vscode.CompletionItemKind.Class)));
+            ret.push(new vscode.CompletionItem('integer', vscode.CompletionItemKind.Keyword));
+            ret.push(new vscode.CompletionItem('string', vscode.CompletionItemKind.Keyword));
+            ret.push(new vscode.CompletionItem('constant', vscode.CompletionItemKind.Keyword));
+        }
+        else if (/^(having)$/.test(sp[s])) {
+            const typename = String(defs.filter(e=>RegExp(`^[^;]*(let|have|make) ([a-zA-Z0-9_]+ )*${sp[s-1]}( (is|as|:|->|with|for|of|about|to).*|(\s*;.*)?)?$`, 'i').test(e[0]+''))[0][0]).match(RegExp(`[a-z0-9A-Z_]+(?=( ${sp[s-1]}))`))[0];
+            const line = defs.filter(e=>RegExp(`^class [a-zA-Z0-9_]+ type ${typename}`, 'i').test(e[0]+''))[0][1];
+            let line_indents = String(line[0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
+            let trimmed = defs.filter(e=>e[1]>line);
+            let findcontext: (string|number)[][] = [];
+            for (const s of trimmed) {
+                findcontext.push(s);
+                if (!RegExp(`^${indent.char.repeat(indent.howmuch*(line_indents+1))}`).test(s[0]+'')) break;
+            }
+            findcontext.filter(e=>RegExp(`^[^;]*has ([a-zA-Z0-9_]+ )*[a-zA-Z0-9_]+`, 'i').test(e[0]+''))
+            .map(e=>{
+                const statement = String(e[0]).split(';')[0].split(/[\s\t]/);
+                let at = 0;
+                if ((at = statement.findIndex(e=>/^(->|:|as|with|for|is|about|to|of)$/i.test(e))-1) == -2) {
+                    at = statement.length-1;
+                }
+                ret.push(new vscode.CompletionItem(statement[at], vscode.CompletionItemKind.Property))
+            });
+        }
+        else if (/^(while|if|repeat|and|or|plus|minus|as|is|\(|[+\-*\/&,]|[a-zA-Z0-9_]+[=!:]|of|about|with|that|what)$/i.test(sp[s])) {
+            let idts=context.search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
+            let findcontext: (string|number)[][] = [];
+            let line = 0;
+            let isbreak=false;
+            for (let i=position.line-1;i>=0;i--) {
+                if (String(defs[i][0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch < idts) {
+                    if (/when/i.test(String(defs[i][0]))) {
+                        line = i;
+                        idts = String(defs[i][0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
+                        isbreak=true;
+                    }
+                }
+                if (isbreak) break;
+            }
+            for (let i=line+1;i<defs.length;i++) {
+                const spaces = String(defs[i][0]).search(/[a-zA-Z0-9\[\](){}_]/);
+                if (spaces!=-1){
+                    if (spaces/indent.howmuch <= idts) {
+                        break;
+                    }
+                    else findcontext.push(defs[i]);
+                }
+            }
+            
+            findcontext.filter(e=>RegExp(`^[^;]*(let|have|make) ([a-zA-Z0-9_]+ )*[a-zA-Z0-9_]+( (is|as|:|->|with|for|of|about|to).*|(\s*;.*)?)?$`, 'i').test(e[0]+''))
+            .map(e=>{
+                const statement = String(e[0]).split(';')[0].split(/[\s\t]/);
+                let at = 0;
+                if ((at = statement.findIndex(e=>/^(->|:|as|with|for|is|about|to|of)$/i.test(e))-1) == -2) {
+                    at = statement.length-1;
+                }
+                ret.push(new vscode.CompletionItem(statement[at], vscode.CompletionItemKind.Variable))
+            });
+            if (/^[wt]hat$/i.test(sp[s])) {
+                ret.push(new vscode.CompletionItem('it', vscode.CompletionItemKind.Keyword));
+            }
+        }
+        else if (/^(\)|[a-zA-Z0-9_]+|[0-9]+)$/i.test(sp[s])) {
+            defs.filter(e=>RegExp(`when [a-zA-Z0-9_]+ [a-zA-Z0-9_]+`, 'i').test(e[0]+''))
+            .filter(e=>{
+                const idts=String(e[0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
+                for (let i=Number(e[1])-1;i>=0;i--) {
+                    if (String(defs[i][0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch < idts) {
+                        if (/class/i.test(String(defs[i][0]))) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            })
+            .map(e=>String(e[0]).match(/(?<=(when [a-zA-Z0-9_]+ ))[a-zA-Z0-9_]+/i)[0])
+            .filter(e=>e!='starts')
+            .map(e=>{
+                ret.push(new vscode.CompletionItem(`${e}!`, vscode.CompletionItemKind.Operator));
+                ret.push(new vscode.CompletionItem(`${e}=`, vscode.CompletionItemKind.Operator));
+            });
+            ret.push(new vscode.CompletionItem(`is`, vscode.CompletionItemKind.Operator));
+            ret.push(new vscode.CompletionItem(`as`, vscode.CompletionItemKind.Operator));
+            ret.push(new vscode.CompletionItem(`or`, vscode.CompletionItemKind.Operator));
+            ret.push(new vscode.CompletionItem(`and`, vscode.CompletionItemKind.Operator));
+            ret.push(new vscode.CompletionItem(`plus`, vscode.CompletionItemKind.Operator));
+            ret.push(new vscode.CompletionItem(`minus`, vscode.CompletionItemKind.Operator));
+
+            ret.push(new vscode.CompletionItem(`do`, vscode.CompletionItemKind.Keyword));
+            ret.push(new vscode.CompletionItem(`was`, vscode.CompletionItemKind.Keyword));
+        }
+
+        return new Promise(e=>e(ret));
+    }
+}
+
 export function activate(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(
         vscode.languages.registerHoverProvider(
@@ -210,4 +369,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(
         vscode.languages.registerDefinitionProvider(
             WL_MODE, new GoDefinitionProvider()));
+    ctx.subscriptions.push(
+        vscode.languages.registerCompletionItemProvider(
+            WL_MODE, new GoCompletionItemProvider(), ' '));
 }
