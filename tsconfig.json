@@ -20,7 +20,8 @@
         ]
     },
     "include": [
-        "extension.ts"
+        "extension.ts",
+        "*/**/*"
     ],
     "exclude": [
         "node_modules"

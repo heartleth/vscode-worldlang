@@ -1,9 +1,13 @@
-Class object type dog
-    When dog created
-    When dog barks
-        println: "bark bark"
+import animals
+
+
+
+
+
+
+
+
+
 
 When it starts
-    Let dog puppy as 10
-
-    puppy barks
+    let 

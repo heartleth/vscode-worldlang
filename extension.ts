@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const WL_MODE: vscode.DocumentSelector = { language: 'engplus', pattern: '**/*.epp' };
 const TOKEN_REGEX = /[^;\t\s()]+/;
 
-function file_format(line: number, doc: vscode.TextDocument): string {
-    return `${doc.fileName}:${line+1}`;
+function file_format(line: number, doc: vscode.Uri): string {
+    return `${doc.toString()}:${line+1}`;
 }
 
 interface ObjectTree {
@@ -13,12 +15,37 @@ interface ObjectTree {
     child: undefined | ObjectTree;
 }
 
-interface indent {
+interface Indent {
     howmuch: number;
     char: string;
 }
 
-function indent_size(defs: (number|string)[][]): indent|undefined {
+interface ReadAble {
+    getText(): string;
+    fileName: string;
+    uri: vscode.Uri;
+}
+type Def = (string|number|vscode.Uri)[];
+
+let visits = [];
+function get_defs(doc: ReadAble): Def[] {
+    if (!visits.includes(doc.uri)) {
+        let defs = doc.getText().split(/\r\n/).map((a,b)=>[a,b,doc.uri]);
+        visits.push(doc.uri);
+        for (const [statement, ..._] of defs.filter(e=>/import/i.test(e[0]+''))) {
+            const p = path.join(path.dirname(doc.fileName), String(statement).substr(7)+'.epp');
+            defs=defs.concat(get_defs({
+                getText: ()=>fs.readFileSync(p).toString(),
+                fileName: p,
+                uri: (vscode.Uri.file(p))
+            }));
+        }
+        return defs;
+    }
+    return [];
+}
+
+function indent_size(defs: Def[]): Indent|undefined {
     for (const _s of defs) {
         const s = String(_s[0]);
         if (!/^[\s\t]*;/.test(s) && s.trim().length>0 && /^[\s\t]+[a-zA-Z0-9\[\](){}_]/.test(s)) {
@@ -27,7 +54,7 @@ function indent_size(defs: (number|string)[][]): indent|undefined {
     }
 }
 
-function trace_fn_info(defs: (number|string)[][], name: string, doc: vscode.TextDocument): string {
+function trace_fn_info(defs: Def[], name: string, doc: vscode.TextDocument): string {
     const infos = defs.filter(e=>RegExp(`^[^;]*when [a-zA-Z0-9_]+ ${name.slice(0, name.length-1)}`, 'i').test(e[0]+''));
     return infos.map(e=>{
         const infos = (e[0]+'').trim().replace(/,/g, ' , ').split(/\s+/).slice(2);
@@ -46,7 +73,7 @@ function trace_fn_info(defs: (number|string)[][], name: string, doc: vscode.Text
                 sess += i + ' ';
             }
         }
-        return `In ${file_format(Number(e[1]), doc)}\n\n    ${e[0]}\n\n`;
+        return `In ${file_format(Number(e[1]), e[2] as vscode.Uri)}\n\n    ${e[0]}\n\n`;
     }).join('');
 }
 
@@ -73,7 +100,7 @@ function stringify(e: ObjectTree): string {
     }
 };
 
-function get_var_context(name: string, s: number, context: string[], doc: vscode.TextDocument, pos: vscode.Position, defs: (string|number)[][]): (string|number)[][] {
+function get_var_context(name: string, s: number, context: string[], doc: vscode.TextDocument, pos: vscode.Position, defs: Def[]): Def[] {
     const trace_object = trace(s, {tp:'root', name}, context);
 
     if (trace_object.tp == 'root') {
@@ -136,7 +163,8 @@ function definition(context: string, doc: vscode.TextDocument, pos: vscode.Posit
     if (context.trim()[0] == ';') return '';
     const token_pos = doc.getWordRangeAtPosition(pos, TOKEN_REGEX);
     const name = doc.getText(token_pos);
-    const defs = doc.getText().split(/\r\n/).map((a,b)=>[a,b]);
+    visits = [];
+    const defs = get_defs(doc);
     const trimmed = context.trim();
 
     if (/^[a-z]+[:!=]$/i.test(name)) {
@@ -147,7 +175,7 @@ function definition(context: string, doc: vscode.TextDocument, pos: vscode.Posit
         if (/^(to|for|of|->|:|about|with)$/i.test(name)) return `Prep.: \`${name}\``;
         if (new RegExp(`^[^;]*(let|have|make) ([a-zA-Z0-9_]+ )*${name} [a-zA-Z0-9_]+( (is|as|:|->|with|for|of|about|to).*|(;.*)?)$`, 'i').test(context)) {
             const classes = defs.filter(e=>RegExp(`^class [a-zA-Z0-9_]+ type ${name}`, 'i').test(e[0]+''))[0];
-            return `In ${file_format(Number(classes[1]), doc)}\n\n    ${classes[0]}\n\n`;
+            return `In ${file_format(Number(classes[1]), classes[2] as vscode.Uri)}\n\n    ${classes[0]}\n\n`;
         }
         else {
             const sp = trimmed.split(/[\s\t]+/);
@@ -171,7 +199,7 @@ function definition(context: string, doc: vscode.TextDocument, pos: vscode.Posit
                 return trace_fn_info(defs, name, doc);
             }
             
-            let candidates = get_var_context(name, s, sp, doc, pos, defs).map(e=>`In ${file_format(Number(e[1]), doc)}\n\n    ${e[0].toString().trim()}\n\n`);
+            let candidates = get_var_context(name, s, sp, doc, pos, defs).map(e=>`In ${file_format(Number(e[1]), e[2] as vscode.Uri)}\n\n    ${e[0].toString().trim()}\n\n`);
             return candidates.join('');
         }
     }
@@ -187,6 +215,13 @@ class GoHoverProvider implements vscode.HoverProvider {
 
 class GoDefinitionProvider implements vscode.DefinitionProvider {
     public provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.Location> {
+        if (/^import/i.test(document.getText().split(/\r\n/)[position.line])) {
+            return new Promise<vscode.Location>(e=>e(new vscode.Location(
+                vscode.Uri.file((path.dirname(document.uri.fsPath) + '\\' + document.getText().split(/\r\n/)[position.line].substr(7)+'.epp')),
+                new vscode.Position(0, 0)
+            )));
+        }
+
         const def = definition(document.getText().split(/\r\n/)[position.line], document, position);
         if (/^In/.test(def.split(/\r\n/)[0])) {
             let pos_info = def.split('\n')[0].slice(3).split(':');
@@ -194,7 +229,7 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
             
             const line_text: string = document.getText().split(/\r\n/)[Number(pos_info[1])-1];
             const pos = new vscode.Position(Number(pos_info[1])-1, line_text.search(/[a-z]+( (is|as|:|->|with|for|of|about|to).*|(;.*)?)$/));
-            const file = document.uri;
+            const file = vscode.Uri.parse(pos_info[0]);
             return new Promise<vscode.Location>(e=>e(new vscode.Location(file, pos)));
         }
     }
@@ -204,7 +239,8 @@ class GoCompletionItemProvider implements vscode.CompletionItemProvider {
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.CompletionItem[]> {
         const context = document.getText().split(/\r\n/)[position.line];
         const sp = context.trim().split(/[\s\t]+/);
-        const defs = document.getText().split(/\r\n/).map((a,b)=>[a,b]);
+        visits = [];
+        const defs = get_defs(document);
         let ret: vscode.CompletionItem[] = [];
         let s = context.substring(0, position.character).trim().split(/\s+/).length - 1;
         let indent = indent_size(defs);
@@ -232,7 +268,7 @@ class GoCompletionItemProvider implements vscode.CompletionItemProvider {
                 const line = defs.filter(e=>RegExp(`^class [a-zA-Z0-9_]+ type ${typename}`, 'i').test(e[0]+''))[0][1];
                 let line_indents = String(line[0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
                 let trimmed = defs.filter(e=>e[1]>line);
-                let findcontext: (string|number)[][] = [];
+                let findcontext: Def[] = [];
                 for (const s of trimmed) {
                     findcontext.push(s);
                     if (!RegExp(`^${indent.char.repeat(indent.howmuch*(line_indents+1))}`).test(s[0]+'')) break;
@@ -274,7 +310,7 @@ class GoCompletionItemProvider implements vscode.CompletionItemProvider {
             const line = defs.filter(e=>RegExp(`^class [a-zA-Z0-9_]+ type ${typename}`, 'i').test(e[0]+''))[0][1];
             let line_indents = String(line[0]).search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
             let trimmed = defs.filter(e=>e[1]>line);
-            let findcontext: (string|number)[][] = [];
+            let findcontext: Def[] = [];
             for (const s of trimmed) {
                 findcontext.push(s);
                 if (!RegExp(`^${indent.char.repeat(indent.howmuch*(line_indents+1))}`).test(s[0]+'')) break;
@@ -291,7 +327,7 @@ class GoCompletionItemProvider implements vscode.CompletionItemProvider {
         }
         else if (/^(while|if|repeat|and|or|plus|minus|as|is|\(|[+\-*\/&,]|[a-zA-Z0-9_]+[=!:]|of|about|with|that|what)$/i.test(sp[s])) {
             let idts=context.search(/[a-zA-Z0-9\[\](){}_]/)/indent.howmuch;
-            let findcontext: (string|number)[][] = [];
+            let findcontext: Def[] = [];
             let line = 0;
             let isbreak=false;
             for (let i=position.line-1;i>=0;i--) {
