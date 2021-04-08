@@ -6,7 +6,7 @@ const WL_MODE: vscode.DocumentSelector = { language: 'engplus', pattern: '**/*.e
 const TOKEN_REGEX = /[^;\t\s()]+/;
 
 function file_format(line: number, doc: vscode.Uri): string {
-    return `${doc.toString()}:${line+1}`;
+    return `${doc.fsPath}:${line+1}`;
 }
 
 interface ObjectTree {
@@ -33,11 +33,12 @@ function get_defs(doc: ReadAble): Def[] {
         let defs = doc.getText().split(/\r\n/).map((a,b)=>[a,b,doc.uri]);
         visits.push(doc.uri);
         for (const [statement, ..._] of defs.filter(e=>/import/i.test(e[0]+''))) {
-            const p = path.join(path.dirname(doc.fileName), String(statement).substr(7)+'.epp');
+            let p = path.dirname(doc.fileName) + '\\' + String(statement).substr(7);
+            p += fs.existsSync(p+'.epp')?'.epp':'.d.epp';
             defs=defs.concat(get_defs({
                 getText: ()=>fs.readFileSync(p).toString(),
                 fileName: p,
-                uri: (vscode.Uri.file(p))
+                uri: vscode.Uri.file(p)
             }));
         }
         return defs;
@@ -216,8 +217,9 @@ class GoHoverProvider implements vscode.HoverProvider {
 class GoDefinitionProvider implements vscode.DefinitionProvider {
     public provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.Location> {
         if (/^import/i.test(document.getText().split(/\r\n/)[position.line])) {
+            let p = path.dirname(document.uri.fsPath) + '\\' + document.getText().split(/\r\n/)[position.line].substr(7);
             return new Promise<vscode.Location>(e=>e(new vscode.Location(
-                vscode.Uri.file((path.dirname(document.uri.fsPath) + '\\' + document.getText().split(/\r\n/)[position.line].substr(7)+'.epp')),
+                vscode.Uri.file(p+fs.existsSync(p+'.epp')?'.epp':'.d.epp'),
                 new vscode.Position(0, 0)
             )));
         }
@@ -227,9 +229,10 @@ class GoDefinitionProvider implements vscode.DefinitionProvider {
             let pos_info = def.split('\n')[0].slice(3).split(':');
             pos_info = `${pos_info.slice(0, pos_info.length-1).join(':')}#${pos_info[pos_info.length-1]}`.split('#');
             
-            const line_text: string = document.getText().split(/\r\n/)[Number(pos_info[1])-1];
-            const pos = new vscode.Position(Number(pos_info[1])-1, line_text.search(/[a-z]+( (is|as|:|->|with|for|of|about|to).*|(;.*)?)$/));
-            const file = vscode.Uri.parse(pos_info[0]);
+            visits = [];
+            const file = vscode.Uri.file(pos_info[0]);
+            // const line_text: string = get_defs(document).filter(e=>e[1]==Number(pos_info[1])-1&&e[2]==file)[0][0] as string;
+            const pos = new vscode.Position(Number(pos_info[1])-1, 0);
             return new Promise<vscode.Location>(e=>e(new vscode.Location(file, pos)));
         }
     }
